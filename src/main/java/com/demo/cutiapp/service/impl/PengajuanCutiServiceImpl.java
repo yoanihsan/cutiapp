@@ -16,7 +16,6 @@ import org.springframework.stereotype.Service;
 
 import com.demo.cutiapp.dto.PengajuanCutiDTO;
 import com.demo.cutiapp.exception.BadRequestException;
-import com.demo.cutiapp.exception.ObjectNotFoundException;
 import com.demo.cutiapp.model.Employee;
 import com.demo.cutiapp.model.PengajuanCuti;
 import com.demo.cutiapp.model.PengajuanCutiDetail;

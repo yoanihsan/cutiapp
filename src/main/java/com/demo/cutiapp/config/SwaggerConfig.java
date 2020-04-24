@@ -22,8 +22,8 @@ public class SwaggerConfig {
 
 	private static final String SWAGGER_API_VERSION = "1.0";
 	private static final String LICENSE_TEXT = "Lecense";
-	private static final String title = "Employee REST API";
-	private static final String description = "RestFull API for Employee";
+	private static final String title = "Cuti App REST API";
+	private static final String description = "RestFull API for Cuti App";
 	
 	private ApiInfo apiInfo() {
 		return new ApiInfoBuilder().title(title).description(description).license(LICENSE_TEXT).version(SWAGGER_API_VERSION)

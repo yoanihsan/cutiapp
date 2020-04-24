@@ -8,11 +8,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import com.demo.cutiapp.dto.EmployeeDTO;
 import com.demo.cutiapp.exception.ObjectNotFoundException;
 import com.demo.cutiapp.model.Employee;
 import com.demo.cutiapp.repository.EmployeeRepository;
 import com.demo.cutiapp.service.EmployeeService;
-import com.demo.cutiapp.util.DbSpecificationUser;
+import com.demo.cutiapp.util.DbSpecification;
 
 @Service
 public class EmployeeServiceImpl implements EmployeeService {
@@ -35,7 +36,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 	@Override
 	public void save(Employee entity) {
 		// TODO Auto-generated method stub
-		
+		empRepo.save(entity);
 	}
 
 	@Override
@@ -64,7 +65,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 	}
 
 	@Override
-	public Page<Employee> findAll(DbSpecificationUser spec, Pageable pageable) {
+	public Page<Employee> findAll(DbSpecification<Employee> spec, Pageable pageable) {
 		// TODO Auto-generated method stub
 		return empRepo.findAll(spec,pageable);	
 	}
@@ -73,6 +74,14 @@ public class EmployeeServiceImpl implements EmployeeService {
 	public Employee findByNIP(String nip) {
 		// TODO Auto-generated method stub
 		return empRepo.findByNip(nip);
+	}
+
+	@Override
+	public Employee save(EmployeeDTO request) {
+		// TODO Auto-generated method stub
+		Employee emp = new Employee(request.getNip(), request.getName(), request.getAddress());
+		empRepo.save(emp);
+		return emp;
 	}
 
 }

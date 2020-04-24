@@ -1,0 +1,28 @@
+version: '3'
+
+services:
+
+  cutiapp-service:
+    image: ihsanyoandocker/cutiapp:v1.0.0
+    container_name: cutiapp-service
+    hostname: cutiapp-service
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+    ports:
+      - 8080:8080
+    volumes:
+      - ./app-config/cutiapp.yml:/app/application-dev.yml
+
+   db:
+     image: postgres:9.6
+     volumes:
+       - cutiapp-postgres:/var/lib/postgresql/data
+       - ./postgresql.conf:/usr/share/postgresql/postgresql.conf
+     restart: always
+     environment:
+       POSTGRES_USER: cutiappdev
+       POSTGRES_PASSWORD: cuti123dev
+     ports:
+       - "5432:5432"   
+volumes:
+   cutiapp-postgres:

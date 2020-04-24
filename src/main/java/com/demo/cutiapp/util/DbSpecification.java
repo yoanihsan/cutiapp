@@ -37,7 +37,7 @@ public class DbSpecification<T> implements Specification<T> {
 		}
 		else if (criteria.getOperation().equalsIgnoreCase("*")) {
 			return builder.equal(root.get("deleted"), false);
-		}
+		} 
 		
 		return null;
 	}

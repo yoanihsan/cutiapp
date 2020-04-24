@@ -1,6 +1,6 @@
 # server configuration
 server:
-   port: 8080
+   port: 8081
 
 # spring configuration
 spring:
@@ -9,8 +9,8 @@ spring:
 
    datasource:
       url: jdbc:postgresql://localhost:5432/cutiapp
-      username: postgres
-      password: 123456
+      username: cutiappdev
+      password: cuti123dev
       initialization-mode: always
       validation-query: SELECT 1
 

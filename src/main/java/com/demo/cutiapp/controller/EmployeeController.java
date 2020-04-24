@@ -7,6 +7,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.function.Function;
 
+import javax.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -15,7 +17,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -26,7 +31,7 @@ import com.demo.cutiapp.response.BaseResponseMessage;
 import com.demo.cutiapp.response.PageableResponse;
 import com.demo.cutiapp.response.util.JsonResponseUtil;
 import com.demo.cutiapp.service.EmployeeService;
-import com.demo.cutiapp.util.DbSpecificationUser;
+import com.demo.cutiapp.util.DbSpecification;
 import com.demo.cutiapp.util.SearchCriteria;
 
 import io.swagger.annotations.Api;
@@ -51,27 +56,30 @@ public class EmployeeController {
     @ApiResponses(value = {@ApiResponse(code = 200, message = "Succes", response = EmployeeDTO.class) })
     public ResponseEntity<BaseResponseMessage<List<EmployeeDTO>>> selectAll(@RequestParam String filter, @RequestParam String value, @RequestParam Integer limit, @RequestParam Integer page, @RequestParam String sort_by, @RequestParam String sort_dir) throws ParseException {
     	PageableResponse meta = new PageableResponse();
-        Sort sort = Sort.by(sort_by).ascending();
+		if (limit == null) limit = 10;
+		if (page == null) page = 0;
+		String opt = ":";
+		if ("".equals(filter)) opt = "*"; 
+    	Sort sort = Sort.by(sort_by == "" ? "id" : sort_by).ascending();
 		if (sort_by != ""){
 			if (sort_dir.equals("asc")){
-				sort = Sort.by(sort_by).ascending();
+				sort = Sort.by(sort_by == "" ? "id" : sort_by).ascending();
 			}else{
-				sort = Sort.by(sort_by).descending();
+				sort = Sort.by(sort_by == "" ? "id" : sort_by).descending();
 			}
 		}
-		
+		Pageable pageable = PageRequest.of(page, limit, sort);
         Page<Employee> empPage = new PageImpl<Employee>(new ArrayList<Employee>());
         if ("createdDate".equals(filter)||"modifiedDate".equals(filter) && !"".equals(value)){
         	String[] arrOfStr = value.split(",", 2);
             Date startDate = format.parse(arrOfStr[0]);
             Date endDate = format.parse(arrOfStr[1]);
-            Pageable pageable = PageRequest.of(page, limit, sort);
             empPage = employeeService.findAllByCreatedDateOrModifiedDate(filter, startDate, endDate, pageable);
         }else{
-            DbSpecificationUser spec = new DbSpecificationUser(new SearchCriteria(filter, ":", value),null);
-            Pageable pageable = PageRequest.of(page, limit, sort);
+            DbSpecification<Employee> spec = new DbSpecification<Employee>(new SearchCriteria(filter, opt, value),null);
             empPage = employeeService.findAll(spec, pageable);
         }
+        
 		Page<EmployeeDTO> pageDto = empPage.map(new Function<Employee, EmployeeDTO>(){
 			@Override
 			public EmployeeDTO apply(Employee entity) {
@@ -92,5 +100,14 @@ public class EmployeeController {
         return JsonResponseUtil.formatSuccessResponse(pageDto.getContent(),meta);
     }
 
+    @PostMapping
+    @ApiOperation("Create pengajuan cuti")
+    @ApiResponses(value = {@ApiResponse(code = 200, message = "Succes", response = Employee.class) })
+    public ResponseEntity<BaseResponseMessage<Employee>> createEmployee(@Valid @RequestBody EmployeeDTO request, BindingResult bindingResult){
+
+    	Employee emp = employeeService.save(request);
+    	
+    	return JsonResponseUtil.formatSuccessResponse(emp);
+    }
 	
 }

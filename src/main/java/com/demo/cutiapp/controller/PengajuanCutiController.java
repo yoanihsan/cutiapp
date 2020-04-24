@@ -63,7 +63,9 @@ public class PengajuanCutiController {
     public ResponseEntity<BaseResponseMessage<PengajuanCuti>> saveUser(@Valid @RequestBody PengajuanCutiDTO request, BindingResult bindingResult){
 		PengajuanCuti response = new PengajuanCuti();
 		Employee emp = empService.findByNIP(request.getNip());
-		if(emp == null) {
+		if(request.getNip().isEmpty()) {
+			bindingResult.rejectValue("nip", "NIP.NotEmpty", "NIP Tidak Boleh Kosong!");
+		}else if(emp == null) {
 			bindingResult.rejectValue("nip", "Employee.notfound", "Pegawai tidak ditemukan!");
 		}else if(request.getTglCuti().length > 0) {
 			for(Date d : request.getTglCuti()) {
@@ -71,6 +73,8 @@ public class PengajuanCutiController {
 					bindingResult.rejectValue("tglCuti", "tglCuti.invalid", "tanggal cuti tidak boleh sebelum hari ini!");
 				}
 			}
+		}else if(request.getKeterangan().isEmpty()) {
+			bindingResult.rejectValue("keterangan", "Keterangan.NotEmpty", "Keterangan Tidak Boleh Kosong!");
 		}
 		if(bindingResult.hasErrors()) {
 			return JsonResponseUtil.formatErrors(bindingResult.getFieldErrors());
@@ -91,6 +95,7 @@ public class PengajuanCutiController {
 		}else if(cuti.getApprove()) {			
 			return JsonResponseUtil.formatException(HttpStatus.BAD_REQUEST, ResponseCodeEnum.VALIDATE_ERROR, "Cuti telah di approved!");
 		}
+		
 		cutiService.approve(id);
 
 		return JsonResponseUtil.formatSuccessResponse(null);
@@ -101,33 +106,33 @@ public class PengajuanCutiController {
     @ApiResponses(value = {@ApiResponse(code = 200, message = "Succes", response = PengajuanCuti.class) })
 	public ResponseEntity<BaseResponseMessage<List<PengajuanCuti>>> selectAll(@RequestParam String filter, @RequestParam String value, @RequestParam Integer limit, @RequestParam Integer page, @RequestParam String sort_by, @RequestParam String sort_dir) throws ParseException {
 		PageableResponse meta = new PageableResponse();
-		Sort sort = Sort.by(sort_by).ascending();
+		if (limit == null) limit = 10;
+		if (page == null) page = 0;
 		String opt = ":";
 		if ("".equals(filter)) opt = "*"; 
+    	Sort sort = Sort.by(sort_by == "" ? "id" : sort_by).ascending();
 		if (sort_by != ""){
 			if (sort_dir.equals("asc")){
-				sort = Sort.by(sort_by).ascending();
+				sort = Sort.by(sort_by == "" ? "id" : sort_by).ascending();
 			}else{
-				sort = Sort.by(sort_by).descending();
+				sort = Sort.by(sort_by == "" ? "id" : sort_by).descending();
 			}
 		}
-
-		Page<PengajuanCuti> empPage = new PageImpl<PengajuanCuti>(new ArrayList<PengajuanCuti>());
+		Pageable pageable = PageRequest.of(page, limit, sort);
+		Page<PengajuanCuti> cutiPage = new PageImpl<PengajuanCuti>(new ArrayList<PengajuanCuti>());
 		if ("createdDate".equals(filter)||"modifiedDate".equals(filter) && !"".equals(value)){
 			String[] arrOfStr = value.split(",", 2);
 			Date startDate = format.parse(arrOfStr[0]);
 			Date endDate = format.parse(arrOfStr[1]);
-			Pageable pageable = PageRequest.of(page, limit, sort);
-			empPage = cutiService.findAllByCreatedDateOrModifiedDate(filter, startDate, endDate, pageable);
+			cutiPage = cutiService.findAllByCreatedDateOrModifiedDate(filter, startDate, endDate, pageable);
 		}else{
 			DbSpecification<PengajuanCuti> spec = new DbSpecification<PengajuanCuti>(new SearchCriteria(filter, opt, value),null);
-			Pageable pageable = PageRequest.of(page, limit, sort);
-			empPage = cutiService.findAll(spec, pageable);
+			cutiPage = cutiService.findAll(spec, pageable);
 		}
 
-		meta.setPageable(empPage.getPageable());
-		meta.setTotalRecord(empPage.getTotalElements());
-		return JsonResponseUtil.formatSuccessResponse(empPage.getContent(),meta);
+		meta.setPageable(cutiPage.getPageable());
+		meta.setTotalRecord(cutiPage.getTotalElements());
+		return JsonResponseUtil.formatSuccessResponse(cutiPage.getContent(),meta);
 	}
 
 }
