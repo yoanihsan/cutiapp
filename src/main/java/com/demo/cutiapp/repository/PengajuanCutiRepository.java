@@ -29,5 +29,8 @@ public interface PengajuanCutiRepository extends BaseRepository<PengajuanCuti, L
 	@Query("select e from #{#entityName} e where DATE(e.modifiedDate) BETWEEN :start and :end and e.deleted=false")
 	public Page<PengajuanCuti> findAllByModifiedDateBetween(@Param("start") Date start, @Param("end") Date end, Pageable pageable);
 
+	@Query("select count(e.id) from #{#entityName} e where e.employee.id = :id and e.tglApprove IS NULL")
+	public Integer findPengajuanWaitingApproved(@Param("id") Long id);
+
 
 }

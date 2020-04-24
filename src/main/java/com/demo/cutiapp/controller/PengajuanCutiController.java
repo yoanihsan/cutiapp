@@ -63,10 +63,13 @@ public class PengajuanCutiController {
     public ResponseEntity<BaseResponseMessage<PengajuanCuti>> saveUser(@Valid @RequestBody PengajuanCutiDTO request, BindingResult bindingResult){
 		PengajuanCuti response = new PengajuanCuti();
 		Employee emp = empService.findByNIP(request.getNip());
+		
 		if(request.getNip().isEmpty()) {
 			bindingResult.rejectValue("nip", "NIP.NotEmpty", "NIP Tidak Boleh Kosong!");
 		}else if(emp == null) {
 			bindingResult.rejectValue("nip", "Employee.notfound", "Pegawai tidak ditemukan!");
+		}else if(emp.getSisaCuti() < request.getTglCuti().length) {
+			bindingResult.rejectValue("nip", "Nip.invalid", "Sisa cuti anda habis!");			
 		}else if(request.getTglCuti().length > 0) {
 			for(Date d : request.getTglCuti()) {
 				if(d.before(new Date())) {
@@ -76,9 +79,15 @@ public class PengajuanCutiController {
 		}else if(request.getKeterangan().isEmpty()) {
 			bindingResult.rejectValue("keterangan", "Keterangan.NotEmpty", "Keterangan Tidak Boleh Kosong!");
 		}
+
 		if(bindingResult.hasErrors()) {
 			return JsonResponseUtil.formatErrors(bindingResult.getFieldErrors());
 		}else{
+			Integer waitingApprove = cutiService.findPengajuanWaitingApproved(emp.getId());
+			if(waitingApprove>0) {
+				bindingResult.rejectValue("nip", "NIP.invalid", "Pengajuan Sebelumnya masih aktif!");
+				return JsonResponseUtil.formatErrors(bindingResult.getFieldErrors());				
+			}
 			response = cutiService.save(request);
 		}
 		

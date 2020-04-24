@@ -13,4 +13,6 @@ public class EmployeeDTO {
 	private String nip;
 	private String name;
 	private String address;
+	private Integer jatahCuti;
+	private Integer sisaCuti;
 }

@@ -42,7 +42,17 @@ public class EmployeeServiceImpl implements EmployeeService {
 	@Override
 	public void update(Long id, Employee entity) {
 		// TODO Auto-generated method stub
-		
+			
+	}
+
+	
+	@Override
+	public void update(Long id, EmployeeDTO dto) {
+		// TODO Auto-generated method stub
+		Employee entity = empRepo.findById(id).orElseThrow(() -> new ObjectNotFoundException("Cannot find employee with id : " + id));
+		entity.setForUpdate(dto);
+		empRepo.save(entity);
+			
 	}
 
 	@Override
@@ -79,7 +89,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 	@Override
 	public Employee save(EmployeeDTO request) {
 		// TODO Auto-generated method stub
-		Employee emp = new Employee(request.getNip(), request.getName(), request.getAddress());
+		Employee emp = new Employee(request.getNip(), request.getName(), request.getAddress(),request.getJatahCuti(), request.getJatahCuti());
 		empRepo.save(emp);
 		return emp;
 	}

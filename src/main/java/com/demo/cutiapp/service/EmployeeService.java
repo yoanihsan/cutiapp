@@ -21,5 +21,7 @@ public interface EmployeeService extends BaseService<Employee, Long> {
 
 	public Employee save(EmployeeDTO request);
 
+	void update(Long id, EmployeeDTO entity);
+
 }
 

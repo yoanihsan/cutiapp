@@ -19,4 +19,7 @@ public interface PengajuanCutiService extends BaseService<PengajuanCuti, Long>{
 
 	public Page<PengajuanCuti> findAll(DbSpecification<PengajuanCuti> spec, Pageable pageable);
 
+	public Integer findPengajuanWaitingApproved(Long id);
+
+	
 }

@@ -14,8 +14,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import com.demo.cutiapp.dto.EmployeeDTO;
 import com.demo.cutiapp.dto.PengajuanCutiDTO;
 import com.demo.cutiapp.exception.BadRequestException;
+import com.demo.cutiapp.exception.ObjectNotFoundException;
 import com.demo.cutiapp.model.Employee;
 import com.demo.cutiapp.model.PengajuanCuti;
 import com.demo.cutiapp.model.PengajuanCutiDetail;
@@ -23,6 +25,7 @@ import com.demo.cutiapp.repository.PengajuanCutiRepository;
 import com.demo.cutiapp.service.EmployeeService;
 import com.demo.cutiapp.service.PengajuanCutiService;
 import com.demo.cutiapp.util.DbSpecification;
+
 
 
 @Service
@@ -69,6 +72,7 @@ public class PengajuanCutiServiceImpl implements PengajuanCutiService{
 	public PengajuanCuti save(PengajuanCutiDTO request) {
 		// TODO Auto-generated method stub
 		Employee emp = empService.findByNIP(request.getNip());
+
 		List<PengajuanCutiDetail> listCutiDetail = new ArrayList<PengajuanCutiDetail>();
 		for(Date d : request.getTglCuti()) {
 			if(6 == convertToLocalDateViaInstant(d).getDayOfWeek().getValue() || 7 == convertToLocalDateViaInstant(d).getDayOfWeek().getValue()) {
@@ -81,6 +85,7 @@ public class PengajuanCutiServiceImpl implements PengajuanCutiService{
 		
 		PengajuanCuti cuti = new PengajuanCuti(listCutiDetail, request.getKeterangan(), listCutiDetail.size(), false, null, new Date(), emp);
 		cutiRepo.save(cuti);
+		
 		return cuti;
 	}
 	
@@ -103,6 +108,16 @@ public class PengajuanCutiServiceImpl implements PengajuanCutiService{
 	@Override
 	public void approve(Long id) {
 		// TODO Auto-generated method stub
+		PengajuanCuti cuti = cutiRepo.findById(id).orElseThrow(()-> new ObjectNotFoundException(""));
+
+		Employee emp = empService.findById(cuti.getEmployee().getId());
+		EmployeeDTO empDTO = new EmployeeDTO();
+		empDTO.setName(emp.getName());
+		empDTO.setNip(emp.getNip());
+		empDTO.setJatahCuti(emp.getJatahCuti());
+		empDTO.setSisaCuti(emp.getSisaCuti() - cuti.getPengajuanCutiDetail().size());
+		
+		empService.update(emp.getId(), empDTO);
 		cutiRepo.approveById(id);
 	}
 
@@ -124,5 +139,11 @@ public class PengajuanCutiServiceImpl implements PengajuanCutiService{
 	public Page<PengajuanCuti> findAll(DbSpecification<PengajuanCuti> spec, Pageable pageable) {
 		// TODO Auto-generated method stub
 		return cutiRepo.findAll(spec, pageable);
+	}
+
+	@Override
+	public Integer findPengajuanWaitingApproved(Long empId) {
+		// TODO Auto-generated method stub
+		return cutiRepo.findPengajuanWaitingApproved(empId);
 	}
 }

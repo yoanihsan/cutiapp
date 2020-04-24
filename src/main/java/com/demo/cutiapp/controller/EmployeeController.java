@@ -92,6 +92,8 @@ public class EmployeeController {
 				dto.setAddress(entity.getAddress());
 				dto.setName(entity.getName());
 				dto.setNip(entity.getNip());
+				dto.setJatahCuti(entity.getJatahCuti());
+				dto.setSisaCuti(entity.getSisaCuti());
 				return dto;
 			}
 		});
@@ -104,9 +106,24 @@ public class EmployeeController {
     @ApiOperation("Create pengajuan cuti")
     @ApiResponses(value = {@ApiResponse(code = 200, message = "Succes", response = Employee.class) })
     public ResponseEntity<BaseResponseMessage<Employee>> createEmployee(@Valid @RequestBody EmployeeDTO request, BindingResult bindingResult){
-
-    	Employee emp = employeeService.save(request);
+    	Employee emp = employeeService.findByNIP(request.getNip());
+    	if(request.getNip().isEmpty()) {
+			bindingResult.rejectValue("nip", "NIP.notEmpty", "Nip tidak boleh kosong!");    		
+    	}else if(request.getName().isEmpty()) {
+			bindingResult.rejectValue("name", "name.notEmpty", "Name tidak boleh kosong!");    		
+    	}else if(request.getAddress().isEmpty()) {
+			bindingResult.rejectValue("address", "address.notEmpty", "Address tidak boleh kosong!");    		
+    	}else if(request.getJatahCuti() == null) {
+			bindingResult.rejectValue("jatahCuti", "NIP.notEmpty", "Jatah cuti tidak boleh kosong!");    		
+    	}else if(emp != null) {
+			bindingResult.rejectValue("nip", "NIP.invalid", "Nip sudah ada!");    		
+    	}
     	
+    	if(bindingResult.hasErrors()) {
+			return JsonResponseUtil.formatErrors(bindingResult.getFieldErrors());
+		}else{
+			emp = employeeService.save(request);
+    	}
     	return JsonResponseUtil.formatSuccessResponse(emp);
     }
 	
